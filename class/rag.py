@@ -5,12 +5,19 @@ import json
 from trafilatura import fetch_url, extract
 import pymupdf4llm 
 
+""" things remaining : chunker,faiss """
 class EmbRag:
-    cache=""
-    urls=[]
-    files=[]
+    # cache=""
+    # urls=[]
+    # files=[]
     def __init__(self,docs_path,faiss_path):
+
+        self.docs=docs_path
+        self.faiss_path=faiss_path
+
         pth=os.path.join(faiss_path,"cache.json")
+        pth2=os.path.join(faiss_path,"meta_data.json")
+        self.pth_checker(pth2)
         self.pth_checker(pth)
         with open(pth,'r') as f:
             self.cache=json.load(f)
@@ -18,13 +25,15 @@ class EmbRag:
 
         for i in self.files:
             if i not in self.cache:
-                if(i.endswith('.docx')):
-                    print(True)
+                if(i.endswith('.txt') and not i.startswith('url')):
+                    with open(os.path.join(self.docs,i),'r') as f:
+                        text=f.read()
+                    print(text)
                 elif(i.endswith('.pdf')):
-                    md_text = pymupdf4llm.to_markdown(os.path.join(docs_path,i))
+                    md_text = pymupdf4llm.to_markdown(os.path.join(self.docs,i))
                     print(md_text)
                 elif(i.endswith('.txt') and i.startswith('url')):
-                    with open(os.path.join(docs_path,i),'r') as f:
+                    with open(os.path.join(self.docs,i),'r') as f:
                         links=f.read()
                         self.urls=links.split(',')
                     for j in self.urls:
@@ -35,7 +44,8 @@ class EmbRag:
                         else:
                             #chunker(result)
                             print(result)
-                        
+                else:
+                    print(f"{i} is not a part of [pdf,txt,website] markitdown feature coming soon")
                         
 
                 self.cache[i]="True"
