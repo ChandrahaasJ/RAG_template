@@ -5,6 +5,7 @@ import json
 from trafilatura import fetch_url, extract
 import pymupdf4llm
 import numpy as np 
+import requests
 
 """ things remaining : chunker,faiss """
 class EmbRag:
@@ -12,7 +13,13 @@ class EmbRag:
     # urls=[]
     # files=[]
     def __init__(self,docs_path,faiss_path):
-
+        """faiss index creation"""
+        
+        index_path =Path(faiss_path+"/index.bin")
+        if(index_path.exists()):
+            index=faiss.read_index(index_path)
+        else:
+            index=faiss.IndexFlatL2(768)
         self.docs=docs_path
         self.faiss_path=faiss_path
         flag=True
@@ -32,23 +39,31 @@ class EmbRag:
                     with open(os.path.join(self.docs,i),'r') as f:
                         text=f.read()
                     chunks=self.chunk_text(text)
+                    embeds=[]
                     for k in range(len(chunks)):
                         dic={}
                         dic['doc']=i
                         dic['id']=k
                         dic['content']=chunks[k]
                         l.append(dic)
+                        embeds.append(self.get_embedding(chunks[k]))
+                    ans=np.stack(embeds)
+                    index.add(ans)
                     #l.append(chk ) append all the chunks to this list
 
                 elif(i.endswith('.pdf')):
                     md_text = pymupdf4llm.to_markdown(os.path.join(self.docs,i))
                     chunks=self.chunk_text(md_text)
+                    embeds=[]
                     for k in range(len(chunks)):
                         dic={}
                         dic['doc']=i
                         dic['id']=k
                         dic['content']=chunks[k]
                         l.append(dic)
+                        embeds.append(self.get_embedding(chunks[k]))
+                    ans=np.stack(embeds)
+                    index.add(ans)
                 elif(i.endswith('.txt') and i.startswith('url')):
                     with open(os.path.join(self.docs,i),'r') as f:
                         links=f.read()
@@ -66,12 +81,16 @@ class EmbRag:
                             chunk.append(result)
                             chunks.append(chunk)
                             l.append({'doc':f"url{j}","content":result})
+                    embeds=[]
                     for k in range(len(chunks)):
                         dic={}
                         dic['doc']=i
                         dic['id']=k
                         dic['content']=chunks[k]
                         l.append(dic)
+                        embeds.append(self.get_embedding(chunks[k]))
+                    ans=np.stack(embeds)
+                    index.add(ans)
 
                 else:
                     flag=False
@@ -81,6 +100,7 @@ class EmbRag:
             json.dump(self.cache,f,indent=4)
         with open(pth2,'w') as f:
             json.dump(l,f,indent=4)
+        faiss.write_index(index, str(index_path))
     
     def pth_checker(self,arge):
         file_path=Path(arge)
@@ -123,16 +143,24 @@ class EmbRag:
                     break
         
         return chunks
+    
+    def get_embedding(self,text):
+        response = requests.post(
+            "http://localhost:11434/api/embeddings",
+            json={
+                "model": "nomic-embed-text",
+                "prompt": text
+            }
+        )
+        response.raise_for_status()
+        return np.array(response.json()["embedding"], dtype=np.float32)
 
 
 DOC=r"C:\EAG\RAG\RAG_template\template\DOCS"
 faiss_pth=r"C:\EAG\RAG\RAG_template\template\faiss_index"
 obj=EmbRag(DOC,faiss_pth)
-with open(r"C:\EAG\RAG\RAG_template\template\DOCS\indiavspak.txt",'r') as f:
-    text=f.read()
 
-chunks=obj.chunk_text(text)
-print(len(chunks))
-arr=np.array(chunks)
-print(len(chunks[0]))
-print(arr.shape)
+
+# index =Path(faiss_pth+"/index.bin")
+# if(index.exists()):
+#     print(True)
