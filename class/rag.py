@@ -17,7 +17,7 @@ class EmbRag:
         
         index_path =Path(faiss_path+"/index.bin")
         if(index_path.exists()):
-            index=faiss.read_index(index_path)
+            index=faiss.read_index(str(index_path))
         else:
             index=faiss.IndexFlatL2(768)
         self.docs=docs_path
@@ -154,12 +154,31 @@ class EmbRag:
         )
         response.raise_for_status()
         return np.array(response.json()["embedding"], dtype=np.float32)
-
+    
+    def queryDB(self,q):
+        vec=self.get_embedding(q).reshape(1,-1)
+        index_path =Path(self.faiss_path+"/index.bin")
+        if(index_path.exists()):
+            index=faiss.read_index(str(index_path))
+            D,I=index.search(vec,k=3)
+            with open(r"C:\EAG\RAG\RAG_template\template\faiss_index\meta_data.json",'r') as f:
+                lst=f.read()
+            lst=eval(lst)
+            indices=I[0]
+            ans=[]
+            for i in range(len(indices)):
+                ans.append(lst[i])
+            return ans
+        else:
+            print("no faiss index found")
+            ans=[-1]
+            return ans
 
 DOC=r"C:\EAG\RAG\RAG_template\template\DOCS"
 faiss_pth=r"C:\EAG\RAG\RAG_template\template\faiss_index"
 obj=EmbRag(DOC,faiss_pth)
-
+ans=obj.queryDB("when were the seed of discord planted amongst india and pakistan?")
+print(ans)
 
 # index =Path(faiss_pth+"/index.bin")
 # if(index.exists()):
