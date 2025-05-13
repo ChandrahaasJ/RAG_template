@@ -173,13 +173,3 @@ class EmbRag:
             print("no faiss index found")
             ans=[-1]
             return ans
-
-DOC=r"C:\EAG\RAG\RAG_template\template\DOCS"
-faiss_pth=r"C:\EAG\RAG\RAG_template\template\faiss_index"
-obj=EmbRag(DOC,faiss_pth)
-ans=obj.queryDB("when were the seed of discord planted amongst india and pakistan?")
-print(ans)
-
-# index =Path(faiss_pth+"/index.bin")
-# if(index.exists()):
-#     print(True)
