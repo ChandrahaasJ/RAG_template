@@ -173,9 +173,3 @@ class EmbRag:
             print("no faiss index found")
             ans=[-1]
             return ans
-
-
-
-# index =Path(faiss_pth+"/index.bin")
-# if(index.exists()):
-#     print(True)
