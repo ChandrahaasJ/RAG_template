@@ -23,14 +23,14 @@ class EmbRag:
         self.docs=docs_path
         self.faiss_path=faiss_path
         flag=True
-        pth=os.path.join(faiss_path,"cache.json")
-        pth2=os.path.join(faiss_path,"meta_data.json")
-        self.pth_checker1(pth2)
-        self.pth_checker(pth)
-        with open(pth,'r') as f:
+        self.pth=os.path.join(faiss_path,"cache.json")
+        self.pth2=os.path.join(faiss_path,"meta_data.json")
+        self.pth_checker1(self.pth2)
+        self.pth_checker(self.pth)
+        with open(self.pth,'r') as f:
             self.cache=json.load(f)
         self.files=os.listdir(docs_path)
-        with open(pth2,'r') as f:
+        with open(self.pth2,'r') as f:
             self.chunks=f.read()
         l=eval(self.chunks)
         for i in self.files:
@@ -96,9 +96,9 @@ class EmbRag:
                     flag=False
                     print(f"{i} is not a part of [pdf,txt,website] markitdown feature coming soon")
                 self.cache[i]="True"
-        with open(pth,'w') as f:
+        with open(self.pth,'w') as f:
             json.dump(self.cache,f,indent=4)
-        with open(pth2,'w') as f:
+        with open(self.pth2,'w') as f:
             json.dump(l,f,indent=4)
         faiss.write_index(index, str(index_path))
     
@@ -174,11 +174,7 @@ class EmbRag:
             ans=[-1]
             return ans
 
-DOC=r"C:\EAG\RAG\RAG_template\template\DOCS"
-faiss_pth=r"C:\EAG\RAG\RAG_template\template\faiss_index"
-obj=EmbRag(DOC,faiss_pth)
-ans=obj.queryDB("when were the seed of discord planted amongst india and pakistan?")
-print(ans)
+
 
 # index =Path(faiss_pth+"/index.bin")
 # if(index.exists()):

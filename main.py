@@ -1,6 +1,6 @@
-def main():
-    print("Hello from template!")
+from classe.rag import EmbRag
 
+Docs=r"C:\EAG\RAG\RAG_template\test\docs"
+faiss=r"C:\EAG\RAG\RAG_template\test\FAISS"
 
-if __name__ == "__main__":
-    main()
+obj=EmbRag(Docs,faiss)
