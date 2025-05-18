@@ -161,7 +161,7 @@ class EmbRag:
         if(index_path.exists()):
             index=faiss.read_index(str(index_path))
             D,I=index.search(vec,k=3)
-            with open(r"C:\EAG\RAG\RAG_template\template\faiss_index\meta_data.json",'r') as f:
+            with open(self.pth2,'r') as f:
                 lst=f.read()
             lst=eval(lst)
             indices=I[0]
