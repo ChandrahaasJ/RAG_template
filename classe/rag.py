@@ -165,9 +165,11 @@ class EmbRag:
                 lst=f.read()
             lst=eval(lst)
             indices=I[0]
+            distances=D[0]
             ans=[]
             for i in range(len(indices)):
-                ans.append(lst[i])
+                if(indices[i]!=-1):
+                    ans.append(lst[i])
             return ans
         else:
             print("no faiss index found")
