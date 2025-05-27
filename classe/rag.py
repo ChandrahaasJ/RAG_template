@@ -35,7 +35,7 @@ class EmbRag:
         l=eval(self.chunks)
         for i in self.files:
             if i not in self.cache:
-                if(i.endswith('.txt') and not i.startswith('url')):
+                if((i.endswith('.txt') or i.endswith('.md')) and not i.startswith('url')):
                     with open(os.path.join(self.docs,i),'r') as f:
                         text=f.read()
                     chunks=self.chunk_text(text)
@@ -70,23 +70,19 @@ class EmbRag:
                         self.urls=links.split(',')
                     chunks=[]
                     for j in self.urls:
-                        chunk=[]
                         downloaded = fetch_url(j)
                         result = extract(downloaded)
-                        
-                        if(result == None):
+                        if result is None:
                             print(f"could not access the url {j} because of authentication ")
                         else:
-                            #chunker(result)
-                            chunk.append(result)
-                            chunks.append(chunk)
-                            l.append({'doc':f"url{j}","content":result})
-                    embeds=[]
+                            chunks.append(result)
+                            l.append({'doc': f"url{j}", "content": result})
+                    embeds = []
                     for k in range(len(chunks)):
-                        dic={}
-                        dic['doc']=i
-                        dic['id']=k
-                        dic['content']=chunks[k]
+                        dic = {}
+                        dic['doc'] = i
+                        dic['id'] = k
+                        dic['content'] = chunks[k]
                         l.append(dic)
                         embeds.append(self.get_embedding(chunks[k]))
                     ans=np.stack(embeds)
@@ -165,10 +161,9 @@ class EmbRag:
                 lst=f.read()
             lst=eval(lst)
             indices=I[0]
-            distances=D[0]
             ans=[]
             for i in range(len(indices)):
-                if(indices[i]!=-1):
+                if indices[i]!=-1:
                     ans.append(lst[i])
             return ans
         else:
